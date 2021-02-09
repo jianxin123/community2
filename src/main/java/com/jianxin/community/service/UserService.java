@@ -1,15 +1,121 @@
 package com.jianxin.community.service;
 
+
 import com.jianxin.community.dao.UserMapper;
 import com.jianxin.community.entity.User;
+import com.jianxin.community.util.CommunityConstant;
+import com.jianxin.community.util.CommunityUtil;
+import com.jianxin.community.util.MailClient;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+
+
+import javax.mail.MessagingException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Random;
+
 
 @Service
-public class UserService {
+public class UserService implements CommunityConstant {
+
     @Autowired
     private UserMapper userMapper;
+
+    @Autowired
+    private MailClient mailClient;
+
+    @Autowired
+    private TemplateEngine templateEngine;
+
+    @Value("${community.path.domain}")
+    private String domain;
+
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
+
     public User findUserById(int id){
         return userMapper.selectById(id);
     }
+
+    public Map<String,Object> register(User user) throws MessagingException {
+        Map<String,Object> map = new HashMap<>();
+        //空值处理
+        if(user==null){
+            throw new IllegalArgumentException("参数不能为空");
+        }
+        //判断user对象里面的数据有问题
+        if(StringUtils.isBlank(user.getUsername())){
+            map.put("usernameMsg","账号不能为空");
+            return map;
+        }
+        if(StringUtils.isBlank(user.getPassword())){
+            map.put("passwordMsg","密码不能为空");
+            return map;
+        }
+        if(StringUtils.isBlank(user.getEmail())){
+            map.put("emailMsg","邮箱不能为空");
+            return map;
+        }
+
+        //验证账号  从数据空中根据name取user对象  如果没有u为null
+        User u = userMapper.selectByName(user.getUsername());
+        if(u != null){
+            map.put("usernameMsg","该账号已存在！");
+            return map;
+        }
+
+        //验证邮箱
+        u = userMapper.selectByEmail(user.getEmail());
+        if (u != null){
+            map.put("emailMsg","该邮箱已被注册");
+            return map;
+        }
+
+        //正式注册用户
+        user.setSalt(CommunityUtil.generateUUID().substring(0,5));
+        user.setPassword(CommunityUtil.md5(user.getPassword()+user.getSalt()));
+        user.setType(0);
+        //用户状态 一般一开始为未激活
+        user.setStatus(0);
+        //激活码
+        user.setActivationCode(CommunityUtil.generateUUID());
+        //头像路径
+        user.setHeaderUrl(String.format("http://images.nowcoder.com/head/%dt.png",new Random().nextInt(1000)));
+        user.setCreateTime(new Date());
+        userMapper.insertUser(user);
+
+
+        //激活邮件
+        Context context = new Context();
+        context.setVariable("email",user.getEmail());
+        //拼接激活路径 比如http://localhost:8080/community/activation/用户id/激活码code
+        //用户id在配置文件中mybatis.configuration.useGeneratedKeys=true  自动生成
+        String url = domain + contextPath + "/activation/" + user.getId() + "/" + user.getActivationCode();
+        context.setVariable("url",url);
+        //利用模板引擎生成邮件内容content
+        String content = templateEngine.process("/mail/activation",context);
+        mailClient.sendMail(user.getEmail(),"激活账号",content);
+        return map;
+    }
+
+        //根据用户id判断激活码
+        public int activation(int userId,String code){
+            User user = userMapper.selectById(userId);
+            //如果查看数据库显示已激活
+            if(user.getStatus()==1){
+                return ACTIVATION_REPEAT;
+            }else if(user.getActivationCode().equals(code)){
+                userMapper.updateStatus(userId,1);
+                return ACTIVATION_SUCCESS;
+            }else {
+                return ACTIVATION_FAILURE;
+            }
+        }
+
 }
