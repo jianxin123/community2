@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
 //controller处理请求->访问业务层service->访问数据库dao->DB
-//先定义实体类entity 各个成员属性 get set tostring
+//先写数据访问层DAO 定义实体类entity 各个成员属性 get set tostring  封装表里的数据
 // 然后到dao写mapper接口
 //然后到resources里写mapper.xml实现
 //然后转到业务层service

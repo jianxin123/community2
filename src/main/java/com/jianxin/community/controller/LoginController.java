@@ -3,17 +3,21 @@ import com.google.code.kaptcha.Producer;
 import com.jianxin.community.entity.User;
 import com.jianxin.community.service.UserService;
 import com.jianxin.community.util.CommunityConstant;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import javax.imageio.ImageIO;
 import javax.mail.MessagingException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import java.awt.image.BufferedImage;
@@ -21,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.Map;
 
+//实现接口 方便引用常量
 @Controller
 public class LoginController implements CommunityConstant {
     private static final Logger logger = LoggerFactory.getLogger(LoginController.class);
@@ -29,6 +34,10 @@ public class LoginController implements CommunityConstant {
 
     @Autowired
     private Producer kaptchaProducer;
+
+    //作为cookie的有效域 这里为全局
+    @Value("${server.servlet.context-path}")
+    private String contextPath;
 
     @RequestMapping(path = "/register",method = RequestMethod.GET)
     public String getRegisterPage(){
@@ -90,5 +99,40 @@ public class LoginController implements CommunityConstant {
         } catch (IOException e) {
             logger.error("响应验证码失败" + e.getMessage());
         }
+    }
+    //路径可以相同 此时请求方式必须不同  这次需要把ticket等信息添加到数据库 所以用post
+    //登录界面上传的信息 有用户名 密码 验证码 是否记住我那个打勾
+    //验证码之前放到了session 参数需要session取出来
+    //登录成功后把ticket发放到客户端保存 用cookie 需要response对象
+    @RequestMapping(path = "/login",method = RequestMethod.POST)
+    public String login(String username,String password,String code,boolean rememberme,
+                        Model model, HttpSession session,HttpServletResponse response){
+        //检查验证码 表现层直接处理
+        String kaptcha = (String)session.getAttribute("kaptcha"); //取出的是object对象 需要强转成string
+        if(StringUtils.isBlank(kaptcha) || StringUtils.isBlank(code)|| !kaptcha.equalsIgnoreCase(code)){
+            model.addAttribute("codeMsg","验证码不正确");
+            return "/site/login";
+        }
+
+        //检查账号 密码 业务层处理
+        int expiredSeconds = rememberme ? REMEMBER_EXPIRED_SECONDS : DEFAULT_EXPIRED_SECONDS;
+        Map<String,Object> map = userService.login(username,password,expiredSeconds);
+        if(map.containsKey("ticket")){
+            Cookie cookie = new Cookie("ticket",map.get("ticket").toString());//map.get返回的是object 需要toString变为string
+            cookie.setPath(contextPath);
+            cookie.setMaxAge(expiredSeconds);;
+            response.addCookie(cookie);
+            return "redirect:/index";
+        }else{
+            model.addAttribute("usernameMsg",map.get("usernameMsg"));//如果不是名字有问题map.get返回null
+            model.addAttribute("passwordMsg",map.get("passwordMsg"));
+            return "/site/login";
+        }
+    }
+
+    @RequestMapping(path = "/logout",method = RequestMethod.GET)
+    public String logout(@CookieValue("ticket") String ticket){ //取网页中字段为ticket的cookie 赋值给String ticket
+        userService.logout(ticket);
+        return "redirect:/login";  //有两个login 一个get 一个post重定向默认到get
     }
 }
