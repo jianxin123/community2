@@ -1,11 +1,14 @@
 package com.jianxin.community.config;
 
 import com.jianxin.community.controller.interceptor.AlphaInterceptor;
+import com.jianxin.community.controller.interceptor.LoginRequiredInterceptor;
 import com.jianxin.community.controller.interceptor.LoginTicketInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.web.util.pattern.PathPattern;
 
 //一般来说config是用来配置第三方的BEAN
 //拦截器需要实现一个接口 不仅仅是bean
@@ -18,6 +21,10 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Autowired
     private LoginTicketInterceptor loginTicketInterceptor;
+
+    @Autowired
+    private LoginRequiredInterceptor loginRequiredInterceptor;
+
     //默认拦截一切路径  //排除所有css等文件 静态资源随便访问  //添加需要拦截的路径  现在只拦截这两个路径
     //貌似是版本问题只能用/*/*.css  不能用/**/*.css
     @Override
@@ -27,6 +34,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/register","/login");
 
         registry.addInterceptor(loginTicketInterceptor)
+                .excludePathPatterns("/*/*.css", "/*/*.js", "/*/*.png", "/*/*.jpg", "/*/*.jpeg");
+
+        registry.addInterceptor(loginRequiredInterceptor)
                 .excludePathPatterns("/*/*.css", "/*/*.js", "/*/*.png", "/*/*.jpg", "/*/*.jpeg");
     }
 }

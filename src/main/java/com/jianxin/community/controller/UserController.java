@@ -1,5 +1,6 @@
 package com.jianxin.community.controller;
 
+import com.jianxin.community.annotation.LoginRequired;
 import com.jianxin.community.entity.User;
 import com.jianxin.community.service.UserService;
 import com.jianxin.community.util.CommunityUtil;
@@ -44,11 +45,13 @@ public class UserController {
     @Autowired
     private HostHolder hostHolder;
 
+    @LoginRequired
     @RequestMapping(path = "/setting",method = RequestMethod.GET)
     public String getSettingPage(){
         return "/site/setting";
     }
 
+    @LoginRequired
     @RequestMapping(path = "/reset",method = RequestMethod.POST)
     public String changePassword(String oldPassword,String newPassword,String newPassword2,Model model){
         User user = hostHolder.getUser();
@@ -69,6 +72,8 @@ public class UserController {
         userService.updatePassword(user.getId(),newPassword);
         return "redirect:/index";
     }
+
+    @LoginRequired
     @RequestMapping(path = "/upload",method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model){
         if(headerImage == null){
