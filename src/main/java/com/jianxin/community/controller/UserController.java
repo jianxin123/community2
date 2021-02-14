@@ -49,6 +49,26 @@ public class UserController {
         return "/site/setting";
     }
 
+    @RequestMapping(path = "/reset",method = RequestMethod.POST)
+    public String changePassword(String oldPassword,String newPassword,String newPassword2,Model model){
+        User user = hostHolder.getUser();
+        oldPassword = CommunityUtil.md5(oldPassword + user.getSalt());
+        if(!user.getPassword().equals(oldPassword)){
+            model.addAttribute("error1","原密码不正确！");
+            return "/site/setting";
+        }
+        if(newPassword == null){
+            model.addAttribute("error2","请输入新密码！");
+            return "/site/setting";
+        }
+        if(!newPassword.equals(newPassword2)){
+            model.addAttribute("error3","两次输入的密码不一致！");
+            return "/site/setting";
+        }
+        newPassword=CommunityUtil.md5(newPassword + user.getSalt());
+        userService.updatePassword(user.getId(),newPassword);
+        return "redirect:/index";
+    }
     @RequestMapping(path = "/upload",method = RequestMethod.POST)
     public String uploadHeader(MultipartFile headerImage, Model model){
         if(headerImage == null){
