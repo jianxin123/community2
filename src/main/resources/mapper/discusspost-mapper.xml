@@ -32,9 +32,17 @@
             and user_id = #{userId}
         </if>
     </select>
+    <!--发布帖子-->
     <insert id="insertDiscussPost" parameterType="DiscussPost">  /*id为mapper里面的方法名*/
         insert into discuss_post (<include refid="insertFields"></include>)
         values (#{userId},#{title},#{content},#{type},#{status},#{createTime},#{commentCount},#{score})
     </insert>
-    
+
+    <!--查看帖子  resultType返回类型-->
+    <select id="selectDiscussPostById" resultType="DiscussPost">
+        select  <include refid="selectFields"/>
+        from discuss_post
+        where id=#{id}
+    </select>
+
 </mapper>
