@@ -7,6 +7,11 @@
         id,from_id,to_id,conversation_id,content,status,create_time
     </sql>
 
+    <sql id="insertFields">
+        from_id,to_id,conversation_id,content,status,create_time
+    </sql>
+
+
     <!-- status !=2表示状态不是删除的 from_id != 1 表示不是系统用户发送的私信即通知  -->
     <!--group by conversation_id 根据conversation_id分组  每个conversation_id都有好几个id即两个人发送了好几次数据  select max(id)取其中id最大的 即最新的数据-->
     <!--where id in（）  括号里返回的是每组最大的id         where id in 表示所有会话中id与选出来的一致的最后的结果就是返回当前用户所有会话的最新消息-->
@@ -67,5 +72,20 @@
             and conversation_id = #{conversationId}
         </if>
     </select>
+
+
+    <insert id="insertMessage" parameterType="Message" keyProperty="id">
+        insert into message (<include refid="insertFields"></include>)
+        values (#{fromId},#{toId},#{conversationId},#{content},#{status},#{createTime})
+    </insert>
+
+    <!--collection="ids"遍历ids  item="id"每次得到一个值记为id-->
+    <update id="updateStatus">
+         update message set status = #{status}
+         where id in
+         <foreach collection="ids"  item="id" open="(" separator="," close=")">
+            #{id}
+         </foreach>
+    </update>
 
 </mapper>
