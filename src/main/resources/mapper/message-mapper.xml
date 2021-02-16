@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.jianxin.community.dao.MessageMapper">
+    <sql id="selectFields">
+        id,from_id,to_id,conversation_id,content,status,create_time
+    </sql>
+
+    <!-- status !=2表示状态不是删除的 from_id != 1 表示不是系统用户发送的私信即通知  -->
+    <!--group by conversation_id 根据conversation_id分组  每个conversation_id都有好几个id即两个人发送了好几次数据  select max(id)取其中id最大的 即最新的数据-->
+    <!--where id in（）  括号里返回的是每组最大的id         where id in 表示所有会话中id与选出来的一致的最后的结果就是返回当前用户所有会话的最新消息-->
+    <select id="selectConversations" resultType="Message">
+        select <include refid="selectFields"></include>
+        from message
+        where id in(
+            select max(id) from message
+            where status !=2
+            and from_id != 1
+            and (from_id = #{userId} or to_id = #{userId})
+            group by conversation_id
+        )
+        order by id desc
+        limit #{offset},#{limit}
+    </select>
+
+    <!--   as m将大查询取别名m   as maxid将子查询的得到的结果取别名maxid-->
+    <!--每组conversation_id返回一个最大id 即最新消息  count一下就得到总共有多少组conversation_id 即当前用户共有多少会话-->
+    <select id="selectConversationCount" resultType="int">
+        select count(m.maxid) from(
+            select max(id) as maxid from message
+            where status !=2
+            and from_id != 1
+            and (from_id = #{userId} or to_id = #{userId})
+            group by conversation_id
+        ) as m
+    </select>
+
+    <select id="selectLetters" resultType="Message">
+        select <include refid="selectFields"></include>
+        from message
+        where status !=2
+        and from_id != 1
+        and conversation_id = #{conversationId}
+        order by id desc
+        limit #{offset},#{limit}
+    </select>
+
+    <select id="selectLetterCount" resultType="int">
+        select count(id)
+        from message
+        where status !=2
+        and from_id != 1
+        and conversation_id = #{conversationId}
+    </select>
+
+    <!--未读私信数量status ==0  且一定是别人发给自己的to_id = #{userId}-->
+    <!--conversationId如果不为空显示的是和某个人的会话共有几条未读消息-->
+    <!--为空则显示该用户一共有几条未读消息-->
+    <select id="selectLetterUnreadCount" resultType="int">
+        select count(id)
+        from message
+        where status =0
+        and from_id != 1
+        and to_id = #{userId}
+        <if test="conversationId!=null">
+            and conversation_id = #{conversationId}
+        </if>
+    </select>
+
+</mapper>
