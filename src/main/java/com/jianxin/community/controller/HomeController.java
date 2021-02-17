@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,5 +46,16 @@ public class HomeController {
         model.addAttribute("discussPosts",discussPosts);//将查询出来的装到model里 （取名字，取得的集合值）
         return "/index"; //返回的是模板的路径  是templates下的index.html
     }
+
+
+    @RequestMapping(path = "/error",method = RequestMethod.GET)
+    public String getErrorPage(){
+        return "/error/500";
+    }
+
+
+
+
+
 
 }
