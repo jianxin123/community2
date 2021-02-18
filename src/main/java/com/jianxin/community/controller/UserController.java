@@ -2,6 +2,7 @@ package com.jianxin.community.controller;
 
 import com.jianxin.community.annotation.LoginRequired;
 import com.jianxin.community.entity.User;
+import com.jianxin.community.service.LikeService;
 import com.jianxin.community.service.UserService;
 import com.jianxin.community.util.CommunityUtil;
 import com.jianxin.community.util.HostHolder;
@@ -44,6 +45,9 @@ public class UserController {
     //取当前用户
     @Autowired
     private HostHolder hostHolder;
+
+    @Autowired
+    private LikeService likeService;
 
     @LoginRequired
     @RequestMapping(path = "/setting",method = RequestMethod.GET)
@@ -128,4 +132,22 @@ public class UserController {
             logger.error("读取头像失败: " + e.getMessage());
         }
     }
+
+    //个人主页
+    @RequestMapping(path = "/profile/{userId}",method = RequestMethod.GET)
+    public String getProfilePage(@PathVariable("userId") int userId,Model model){
+        User user = userService.findUserById(userId);
+        if(user == null){
+            throw new RuntimeException("该用户不存在！");
+        }
+        //用户基本信息
+        model.addAttribute("user",user);
+        int likeCount = likeService.findUserLikeCount(userId);
+        model.addAttribute("likeCount",likeCount);
+
+        return "/site/profile";
+    }
+
+
+
 }

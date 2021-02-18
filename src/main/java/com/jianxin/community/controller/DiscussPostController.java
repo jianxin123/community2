@@ -49,7 +49,7 @@ public class DiscussPostController implements CommunityConstant {
             return CommunityUtil.getJSONString(403,"你还没有登录！");  //异步发送  403表示权限不够
         }
         DiscussPost post = new DiscussPost();
-        post.setuserId(user.getId());
+        post.setUserId(user.getId());
         post.setTitle(title);
         post.setContent(content);
         post.setCreateTime(new Date());
@@ -66,7 +66,7 @@ public class DiscussPostController implements CommunityConstant {
 
         //得到发布帖子的作者  可以查询帖子表的时候关联用户表获取 但是会增加耦合
         //这里采用用userService的方法获取用户 这样会查询两次 影响效率 后期用redis优化 信息存到内存后效率影响就小很多了
-        User user = userService.findUserById(post.getuserId());
+        User user = userService.findUserById(post.getUserId());
         model.addAttribute("user",user);
 
         //点赞数量
@@ -122,8 +122,7 @@ public class DiscussPostController implements CommunityConstant {
                         replyVo.put("likeCount",likeCount);
                         //点赞状态  没登录返回0
                         likeStatus = hostHolder.getUser() == null ? 0 :likeService.findEntityLikeStatus(hostHolder.getUser().getId(),ENTITY_TYPE_COMMENT,reply.getId());
-                        replyVo.put("likeStatus",likeStatus)
-                        ;
+                        replyVo.put("likeStatus",likeStatus);
                         replyVoList.add(replyVo);
                     }
                 }

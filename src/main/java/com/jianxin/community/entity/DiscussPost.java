@@ -38,12 +38,12 @@ public class DiscussPost {
         this.id = id;
     }
 
-    public int getuserId() {
+    public int getUserId() {
         return userId;
     }
 
-    public void setuserId(int userid) {
-        this.userId = userid;
+    public void setUserId(int userId) {
+        this.userId = userId;
     }
 
     public String getTitle() {
