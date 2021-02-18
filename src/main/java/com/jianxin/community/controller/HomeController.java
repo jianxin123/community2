@@ -4,7 +4,9 @@ import com.jianxin.community.entity.DiscussPost;
 import com.jianxin.community.entity.Page;
 import com.jianxin.community.entity.User;
 import com.jianxin.community.service.DiscussPostService;
+import com.jianxin.community.service.LikeService;
 import com.jianxin.community.service.UserService;
+import com.jianxin.community.util.CommunityConstant;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,12 +20,15 @@ import java.util.List;
 import java.util.Map;
 
 @Controller
-public class HomeController {
+public class HomeController implements CommunityConstant {
     //controller查询调用service需要注入
     @Autowired
     private DiscussPostService discussPostService;
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private LikeService likeService;
 
     //访问的是首页路径为index
     @RequestMapping(path = "/index",method = RequestMethod.GET)
@@ -40,6 +45,9 @@ public class HomeController {
                 map.put("post",post);
                 User user = userService.findUserById(post.getuserId());
                 map.put("user",user);
+
+                long likeCount = likeService.findEntityLikeCount(ENTITY_TYPE_POST,post.getId());
+                map.put("likeCount",likeCount);
                 discussPosts.add(map);
             }
         }
