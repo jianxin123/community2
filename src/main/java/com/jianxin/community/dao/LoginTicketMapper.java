@@ -5,7 +5,9 @@ import org.apache.ibatis.annotations.*;
 
 //这次不采用在resources下新建mapper的方式实现
 //采用注解的方式实现sql
+//@Deprecated声明这个组件不推荐使用 用redis了
 @Mapper
+@Deprecated
 public interface LoginTicketMapper {
 
     @Insert({
