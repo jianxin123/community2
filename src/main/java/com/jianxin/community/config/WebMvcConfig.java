@@ -1,8 +1,10 @@
 package com.jianxin.community.config;
 
+import com.fasterxml.jackson.databind.ser.impl.MapEntrySerializer;
 import com.jianxin.community.controller.interceptor.AlphaInterceptor;
 import com.jianxin.community.controller.interceptor.LoginRequiredInterceptor;
 import com.jianxin.community.controller.interceptor.LoginTicketInterceptor;
+import com.jianxin.community.controller.interceptor.MessageInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +27,9 @@ public class WebMvcConfig implements WebMvcConfigurer {
     @Autowired
     private LoginRequiredInterceptor loginRequiredInterceptor;
 
+    @Autowired
+    private MessageInterceptor messageInterceptor;
+
     //默认拦截一切路径  //排除所有css等文件 静态资源随便访问  //添加需要拦截的路径  现在只拦截这两个路径
     //貌似是版本问题只能用/*/*.css  不能用/**/*.css
     @Override
@@ -37,6 +42,8 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .excludePathPatterns("/*/*.css", "/*/*.js", "/*/*.png", "/*/*.jpg", "/*/*.jpeg");
 
         registry.addInterceptor(loginRequiredInterceptor)
+                .excludePathPatterns("/*/*.css", "/*/*.js", "/*/*.png", "/*/*.jpg", "/*/*.jpeg");
+        registry.addInterceptor(messageInterceptor)
                 .excludePathPatterns("/*/*.css", "/*/*.js", "/*/*.png", "/*/*.jpg", "/*/*.jpeg");
     }
 }
