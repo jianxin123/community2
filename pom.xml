@@ -102,6 +102,14 @@
 			<version>2.4.2</version>
 		</dependency>
 
+		<!-- 配置Kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+			<version>2.6.6</version>
+		</dependency>
+
+
 	</dependencies>
 
 	<build>
