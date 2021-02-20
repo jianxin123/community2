@@ -1,7 +1,9 @@
 package com.jianxin.community.controller;
 
+import com.jianxin.community.entity.Event;
 import com.jianxin.community.entity.Page;
 import com.jianxin.community.entity.User;
+import com.jianxin.community.event.EventProducer;
 import com.jianxin.community.service.FollowService;
 import com.jianxin.community.service.UserService;
 import com.jianxin.community.util.CommunityConstant;
@@ -30,12 +32,25 @@ public class FollowController implements CommunityConstant {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     //关注和点赞一样是异步请求 页面不刷新
     @RequestMapping(path = "/follow",method = RequestMethod.POST)
     @ResponseBody
     public String follow(int entityType,int entityId){
         User user = hostHolder.getUser();
         followService.follow(user.getId(),entityType,entityId);
+
+        //触发关注事件
+        Event event = new Event()
+                .setTopic(TOPIC_FOLLOW)
+                .setUserId(hostHolder.getUser().getId())
+                .setEntityType(entityType)
+                .setEntityId(entityId)
+                .setEntityUserId(entityId);//目前项目只能关注人 所以直接用entityId
+        eventProducer.fireEvent(event);
+
         return CommunityUtil.getJSONString(0,"已关注");
     }
 

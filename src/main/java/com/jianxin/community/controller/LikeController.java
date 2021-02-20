@@ -1,7 +1,10 @@
 package com.jianxin.community.controller;
 
+import com.jianxin.community.entity.Event;
 import com.jianxin.community.entity.User;
+import com.jianxin.community.event.EventProducer;
 import com.jianxin.community.service.LikeService;
+import com.jianxin.community.util.CommunityConstant;
 import com.jianxin.community.util.CommunityUtil;
 import com.jianxin.community.util.HostHolder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,7 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Controller
-public class LikeController {
+public class LikeController implements CommunityConstant {
 
     @Autowired
     private LikeService likeService;
@@ -22,10 +25,13 @@ public class LikeController {
     @Autowired
     private HostHolder hostHolder;
 
+    @Autowired
+    private EventProducer eventProducer;
+
     // @ResponseBody用于异步请求
     @RequestMapping(path = "/like",method = RequestMethod.POST)
     @ResponseBody
-    public String like(int entityType,int entityId,int entityUserId){
+    public String like(int entityType,int entityId,int entityUserId,int postId){
         User user = hostHolder.getUser();
 
         //点赞
@@ -39,6 +45,20 @@ public class LikeController {
         Map<String,Object> map = new HashMap<>();
         map.put("likeCount",likeCount);
         map.put("likeStatus",likeStatus);
+
+        //触发点赞事件  取消点赞就算了
+        if(likeStatus == 1){
+            Event event = new Event()
+                    .setTopic(TOPIC_LIKE)
+                    .setUserId(hostHolder.getUser().getId())
+                    .setEntityType(entityType)
+                    .setEntityId(entityId)
+                    .setEntityUserId(entityUserId)
+                    .setData("postId",postId);
+            eventProducer.fireEvent(event);
+
+
+        }
 
         return CommunityUtil.getJSONString(0,null,map);//0代表正常
     }
