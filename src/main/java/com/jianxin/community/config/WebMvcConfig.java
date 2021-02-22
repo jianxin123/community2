@@ -1,16 +1,14 @@
 package com.jianxin.community.config;
 
-import com.fasterxml.jackson.databind.ser.impl.MapEntrySerializer;
+
 import com.jianxin.community.controller.interceptor.AlphaInterceptor;
 import com.jianxin.community.controller.interceptor.LoginRequiredInterceptor;
 import com.jianxin.community.controller.interceptor.LoginTicketInterceptor;
 import com.jianxin.community.controller.interceptor.MessageInterceptor;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.ParameterResolutionDelegate;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
-import org.springframework.web.util.pattern.PathPattern;
 
 //一般来说config是用来配置第三方的BEAN
 //拦截器需要实现一个接口 不仅仅是bean

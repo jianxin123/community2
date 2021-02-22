@@ -1,18 +1,44 @@
 package com.jianxin.community.entity;
 
 
+import org.springframework.data.annotation.Id;
+import org.springframework.data.elasticsearch.annotations.Document;
+import org.springframework.data.elasticsearch.annotations.Field;
+import org.springframework.data.elasticsearch.annotations.FieldType;
+
 import java.util.Date;
 
-//帖子
+
+//加了这个注解后spring就知道DiscussPost这个实体和discusspost这个索引有对应关系
+//帖子                索引 相当与表名               分片         副本
+@Document(indexName = "discusspost",type = "_doc",shards = 6,replicas = 3)
 public class DiscussPost {
+    @Id
     private int id;
+
+    @Field(type = FieldType.Integer)
     private int userId;
+    //                 存储时候的解析器（尽可能的拆分词条）  搜索时候的解析器（尽可能智能的解析）
+
+    @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_smart")
     private String title;
+
+    @Field(type = FieldType.Text,analyzer = "ik_max_word",searchAnalyzer = "ik_smart")
     private String content;
+
+    @Field(type = FieldType.Integer)
     private int type;//0普通 1置顶
+
+    @Field(type = FieldType.Integer)
     private int status;//普通 精华 拉黑
+
+    @Field(type = FieldType.Date)
     private Date createTime;
+
+    @Field(type = FieldType.Integer)
     private int commentCount;
+
+    @Field(type = FieldType.Double)
     private double score;//计算热度
 
     @Override
