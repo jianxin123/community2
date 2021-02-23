@@ -33,7 +33,7 @@
         </if>
     </select>
     <!--发布帖子-->
-    <insert id="insertDiscussPost" parameterType="DiscussPost">  /*id为mapper里面的方法名*/
+    <insert id="insertDiscussPost" parameterType="DiscussPost" keyProperty="id">  /*id为mapper里面的方法名*/
         insert into discuss_post (<include refid="insertFields"></include>)
         values (#{userId},#{title},#{content},#{type},#{status},#{createTime},#{commentCount},#{score})
     </insert>

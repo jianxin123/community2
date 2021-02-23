@@ -76,7 +76,7 @@
 				<!-- 作者 -->
 				<div class="media pb-3 border-bottom">
 					<a th:href="@{|/user/profile/${user.id}|}">
-						<img th:src="${user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" >
+						<img th:src="${user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" style="width: 50px;height: 50px;">
 					</a>
 					<div class="media-body">
 						<div class="mt-0 text-warning" th:utext="${user.username}">寒江雪</div>
@@ -120,7 +120,7 @@
 					<!-- 遍历回帖 -->
 					<li class="media pb-3 pt-3 mb-3 border-bottom" th:each="cvo:${comments}">
 						<a th:href="@{|/user/profile/${cvo.user.id}|}">
-							<img th:src="${cvo.user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" >
+							<img th:src="${cvo.user.headerUrl}" class="align-self-start mr-4 rounded-circle user-header" alt="用户头像" style="width: 50px;height: 50px;">
 						</a>
 						<div class="media-body">
 							<div class="mt-0">
