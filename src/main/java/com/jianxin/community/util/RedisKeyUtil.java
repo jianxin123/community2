@@ -10,6 +10,8 @@ public class RedisKeyUtil {
     private static final String PREFIX_KAPTCHA = "kaptcha"; //存验证码
     private static final String PREFIX_TICKET = "ticket"; //登录凭证
     private static final String PREFIX_USER = "user";  //用户信息缓存
+    private static final String PREFIX_UV = "uv"; //独立访客
+    private static final String PREFIX_DAU = "dau";//日活跃用户
 
     //获得某个实体的赞的key
     //格式 like:entity:entityType:entityId    用集合形式set存储 存userId  谁点赞就把id存进去 方便以后看谁点赞了等其他需求
@@ -51,5 +53,25 @@ public class RedisKeyUtil {
     //用户
     public static String getUserKey(int userId){
         return PREFIX_USER + SPLIT + userId;
+    }
+
+    //单日UV
+    public static String getUVkey(String date){
+        return PREFIX_UV + SPLIT + date;
+    }
+
+    //区间UV 获得一周内的uv需要令设置一个key存储
+    public static String getUVkey(String startDate,String endDate){
+        return PREFIX_UV + SPLIT + startDate + SPLIT + endDate;
+    }
+
+    //单日活跃用户
+    public static String getDAUkey(String date){
+        return PREFIX_DAU + SPLIT + date;
+    }
+
+    //区间活跃用户
+    public static String getDAUkey(String startDate,String endDate){
+        return PREFIX_DAU + SPLIT + startDate + SPLIT + endDate;
     }
 }
