@@ -8,7 +8,9 @@ import com.jianxin.community.service.CommentService;
 import com.jianxin.community.service.DiscussPostService;
 import com.jianxin.community.util.CommunityConstant;
 import com.jianxin.community.util.HostHolder;
+import com.jianxin.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestAttribute;
@@ -32,6 +34,9 @@ public class CommentController implements CommunityConstant {
 
     @Autowired
     private DiscussPostService discussPostService;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     @RequestMapping(path = "/add/{discussPostId}",method = RequestMethod.POST)
     public String addComment(@PathVariable("discussPostId") int discussPostId, Comment comment){
@@ -65,7 +70,10 @@ public class CommentController implements CommunityConstant {
                     .setEntityId(discussPostId);
             eventProducer.fireEvent(event);
         }
-
+        //计算帖子分数  放到redis 隔段时间定时处理
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        //存到set集合里 因为如果存到队列里  间隔时间内帖子被多次点赞会被多次计算 这些都是重复操作 而set是去重的
+        redisTemplate.opsForSet().add(redisKey,discussPostId);
 
         return "redirect:/discuss/detail/" + discussPostId;
     }

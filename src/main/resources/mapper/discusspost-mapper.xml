@@ -18,8 +18,14 @@
         <if test="userId!=0">/*即查看自己发布的帖子*/
             and user_id = #{userId}
         </if>
-        /*倒序排序 1为置顶就在前面   在类型相同情况下按时间排序这是权宜之计以后用热度排序*/
-        order by type desc, create_time desc
+        <if test="orderMode==0">
+            /*倒序排序 1为置顶就在前面   在类型相同情况下按时间排序这是权宜之计以后用热度排序*/
+            order by type desc, create_time desc
+        </if>
+        <if test="orderMode==1">
+            order by type desc, score desc, create_time desc
+        </if>
+
         /*分页*/
         limit #{offset},#{limit}
     </select>
@@ -57,4 +63,7 @@
         update discuss_post set status = #{status} where id = #{id};
     </update>
 
+    <update id="updateScore">
+        update discuss_post set score = #{score} where id = #{id};
+    </update>
 </mapper>

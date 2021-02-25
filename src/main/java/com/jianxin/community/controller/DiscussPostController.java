@@ -10,7 +10,9 @@ import com.jianxin.community.service.UserService;
 import com.jianxin.community.util.CommunityConstant;
 import com.jianxin.community.util.CommunityUtil;
 import com.jianxin.community.util.HostHolder;
+import com.jianxin.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -41,6 +43,9 @@ public class DiscussPostController implements CommunityConstant {
     @Autowired
     private EventProducer eventProducer;
 
+    @Autowired
+    private RedisTemplate redisTemplate;
+
     //页面中只需传入title content两个参数
     @RequestMapping(path = "/add",method = RequestMethod.POST)
     @ResponseBody
@@ -63,6 +68,11 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(post.getId());
         eventProducer.fireEvent(event);
+
+        //计算帖子分数  放到redis 隔段时间定时处理
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        //存到set集合里 因为如果存到队列里  间隔时间内帖子被多次点赞会被多次计算 这些都是重复操作 而set是去重的
+        redisTemplate.opsForSet().add(redisKey,post.getId());
 
         //报错的情况将来统一处理
         return CommunityUtil.getJSONString(0,"发布成功！");  //0表示正确的状态
@@ -178,6 +188,9 @@ public class DiscussPostController implements CommunityConstant {
                 .setEntityType(ENTITY_TYPE_POST)
                 .setEntityId(id);
         eventProducer.fireEvent(event);
+
+        String redisKey = RedisKeyUtil.getPostScoreKey();
+        redisTemplate.opsForSet().add(redisKey,id);
 
         return CommunityUtil.getJSONString(0);
     }

@@ -7,7 +7,9 @@ import com.jianxin.community.service.LikeService;
 import com.jianxin.community.util.CommunityConstant;
 import com.jianxin.community.util.CommunityUtil;
 import com.jianxin.community.util.HostHolder;
+import com.jianxin.community.util.RedisKeyUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -27,6 +29,9 @@ public class LikeController implements CommunityConstant {
 
     @Autowired
     private EventProducer eventProducer;
+
+    @Autowired
+    private RedisTemplate redisTemplate;
 
     // @ResponseBody用于异步请求
     @RequestMapping(path = "/like",method = RequestMethod.POST)
@@ -56,8 +61,12 @@ public class LikeController implements CommunityConstant {
                     .setEntityUserId(entityUserId)
                     .setData("postId",postId);
             eventProducer.fireEvent(event);
+        }
 
-
+        //只对帖子点赞进行加分
+        if(entityType == ENTITY_TYPE_POST){
+            String redisKey = RedisKeyUtil.getPostScoreKey();
+            redisTemplate.opsForSet().add(redisKey,postId);
         }
 
         return CommunityUtil.getJSONString(0,null,map);//0代表正常

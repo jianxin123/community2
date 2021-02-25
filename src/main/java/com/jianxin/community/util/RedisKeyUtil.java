@@ -12,6 +12,8 @@ public class RedisKeyUtil {
     private static final String PREFIX_USER = "user";  //用户信息缓存
     private static final String PREFIX_UV = "uv"; //独立访客
     private static final String PREFIX_DAU = "dau";//日活跃用户
+    private static final String PREFIX_POST = "post";//热帖
+
 
     //获得某个实体的赞的key
     //格式 like:entity:entityType:entityId    用集合形式set存储 存userId  谁点赞就把id存进去 方便以后看谁点赞了等其他需求
@@ -73,5 +75,9 @@ public class RedisKeyUtil {
     //区间活跃用户
     public static String getDAUkey(String startDate,String endDate){
         return PREFIX_DAU + SPLIT + startDate + SPLIT + endDate;
+    }
+    //返回统计帖子分数的key
+    public static String getPostScoreKey(){
+        return PREFIX_POST + SPLIT + "score";
     }
 }
