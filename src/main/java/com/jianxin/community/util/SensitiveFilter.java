@@ -18,7 +18,7 @@ public class SensitiveFilter {
     private static final Logger logger = LoggerFactory.getLogger(SensitiveFilter.class);
 
     //替换成***
-    private static final String REPLACEMENT = "***";
+    private static final String REPLACEMENT = "铁帅哥";
 
     //根节点
     private TrieNode rootNode = new TrieNode();
